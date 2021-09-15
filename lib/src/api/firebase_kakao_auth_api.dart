@@ -68,7 +68,7 @@ class FirebaseKakaoAuthAPI implements BaseAuthAPI {
     AccessTokenResponse token =
         await AuthApi.instance.issueAccessToken(authCode);
 
-    await AccessTokenStore.instance.toStore(
+    await TokenManager.instance.setToken(
         token); // Store access token in AccessTokenStore for future API requests.
     return token.accessToken;
   }
@@ -104,7 +104,7 @@ class FirebaseKakaoAuthAPI implements BaseAuthAPI {
 
   @override
   Future<void> signOut() {
-    AccessTokenStore.instance.clear();
+    TokenManager.instance.clear();
     return Future.value("");
   }
 

@@ -2,26 +2,23 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_login_facebook/flutter_login_facebook.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:http/http.dart' as http;
 
 import 'base_auth_api.dart';
 
 class FirebaseFacebookAuthAPI implements BaseAuthAPI {
   FirebaseFacebookAuthAPI({
-    this.permissions = const [
-      FacebookPermission.email,
-      FacebookPermission.publicProfile
-    ],
+    this.permissions = const ['email', 'public_profile'],
     this.useAndroidExpressLogin = true,
   });
 
-  final List<FacebookPermission> permissions;
+  final List<String> permissions;
   final bool useAndroidExpressLogin;
 
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
-  FacebookLogin _facebookLogin = FacebookLogin();
+  // FacebookLogin _facebookLogin = FacebookLogin();
 
   String? token;
 
@@ -55,34 +52,30 @@ class FirebaseFacebookAuthAPI implements BaseAuthAPI {
   }
 
   Future<AuthCredential> _getCredential() async {
-    final FacebookLoginResult result = await _signInProvider();
+    final result = await _signInProvider();
 
-    if (result.status == FacebookLoginStatus.cancel) {
+    if (result.status == LoginStatus.cancelled) {
       return Future.error(PlatformException(
           code: "FACEBOOK_CANCELLED_BY_USER",
           message: "Facebook sign-in is cancelled by user."));
-    } else if (result.status == FacebookLoginStatus.error) {
+    } else if (result.status == LoginStatus.failed) {
       return Future.error(PlatformException(
-          code: "FACEBOOK_SIGN_IN_FAILED",
-          message: result.error!.developerMessage));
+          code: "FACEBOOK_SIGN_IN_FAILED", message: result.message));
+    } else if (result.status == LoginStatus.success) {
+      token = result.accessToken!.token;
+
+      return FacebookAuthProvider.credential(token!);
     }
-
-    token = result.accessToken!.token;
-
-    return FacebookAuthProvider.credential(token!);
+    return Future.delayed(Duration(seconds: 1));
   }
 
-  Future<FacebookLoginResult> _signInProvider() async {
-    if (useAndroidExpressLogin) {
-      return await _facebookLogin.expressLogin();
-    }
-
-    return await _facebookLogin.logIn(permissions: permissions);
+  Future<LoginResult> _signInProvider() async {
+    return await FacebookAuth.instance.login(permissions: permissions);
   }
 
   @override
   Future<void> signOut() {
-    return _facebookLogin.logOut();
+    return FacebookAuth.instance.logOut();
   }
 
   @override
@@ -90,7 +83,7 @@ class FirebaseFacebookAuthAPI implements BaseAuthAPI {
     try {
       return (await user!.linkWithCredential(await _getCredential())).user;
     } catch (e) {
-      _facebookLogin.logOut();
+      FacebookAuth.instance.logOut();
       return Future.error(e);
     }
   }

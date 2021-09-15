@@ -10,16 +10,17 @@ dependencies:
   flutter:
     sdk: flutter
 
-  firebase_core: ^1.0.3
-  firebase_auth: ^1.1.0
-  cloud_functions: ^1.0.3
+  firebase_core: ^1.6.0
+  firebase_auth: ^3.1.1
+  cloud_functions: ^3.0.3
+
   provider: ^5.0.0
-  google_sign_in: ^5.0.0
-  kakao_flutter_sdk: ^0.6.1
-  flutter_login_facebook: ^1.0.1
+  google_sign_in: ^5.1.0
+  kakao_flutter_sdk: ^0.8.1
+  flutter_facebook_auth: ^3.5.1
   http: ^0.13.0 # Used for fetching profiles from Facebook GraphAPI
   sign_in_with_apple: ^3.0.0
-  crypto: ^3.0.0
+  crypto: ^3.0.1
 
 dev_dependencies:
   flutter_test:
